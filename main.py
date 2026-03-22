@@ -28,14 +28,13 @@ async def generate_audio(text, output_path):
 
         # Step 1: semantic
         subprocess.run([
-            "python",
+            sys.executable,
             "fish-speech/fish_speech/models/text2semantic/inference.py",
             "--text", text
         ], check=True)
 
-        # Step 2: DAC
         subprocess.run([
-            "python",
+            sys.executable,
             "fish-speech/fish_speech/models/dac/inference.py",
             "-i", "codes_0.npy"
         ], check=True)
