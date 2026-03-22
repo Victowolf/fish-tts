@@ -28,10 +28,9 @@ async def generate_audio(text, output_path):
     async with gpu_lock:
         print(f"🎤 Generating: {text[:50]}")
 
-        # Unique IDs to avoid overwrite
+        # Unique IDs
         file_id = str(uuid.uuid4())
         codes_file = f"codes_{file_id}.npy"
-        temp_wav = f"fake_{file_id}.wav"
 
         # Step 1: text → semantic tokens
         res1 = subprocess.run([
@@ -48,11 +47,13 @@ async def generate_audio(text, output_path):
         if res1.returncode != 0:
             raise Exception("text2semantic failed")
 
-        # Fish always outputs codes_0.npy → rename it
-        if not os.path.exists("codes_0.npy"):
-            raise Exception("codes_0.npy not found")
+        # ✅ FIX: correct path (output folder)
+        codes_src = "output/codes_0.npy"
 
-        os.rename("codes_0.npy", codes_file)
+        if not os.path.exists(codes_src):
+            raise Exception("codes file not found in output/")
+
+        os.rename(codes_src, codes_file)
 
         # Step 2: semantic → waveform
         res2 = subprocess.run([
@@ -68,11 +69,15 @@ async def generate_audio(text, output_path):
         if res2.returncode != 0:
             raise Exception("DAC step failed")
 
-        # Fish outputs fake.wav → rename it
-        if not os.path.exists("fake.wav"):
-            raise Exception("fake.wav not generated")
+        # ✅ Handle both possible output paths
+        wav_src = "fake.wav"
+        if not os.path.exists(wav_src):
+            wav_src = "output/fake.wav"
 
-        os.rename("fake.wav", output_path)
+        if not os.path.exists(wav_src):
+            raise Exception("audio not generated")
+
+        os.rename(wav_src, output_path)
 
 
 @app.post("/tts")
