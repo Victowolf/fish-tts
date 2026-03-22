@@ -2,6 +2,8 @@ import os
 import uuid
 import asyncio
 import subprocess
+import sys
+
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
