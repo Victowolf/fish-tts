@@ -26,20 +26,20 @@ async def generate_audio(text, output_path):
     async with gpu_lock:
         print(f"🎤 Generating: {text[:50]}")
 
-        # Step 1: Generate semantic tokens
+        # Step 1: semantic
         subprocess.run([
             "python",
-            "fish_speech/models/text2semantic/inference.py",
+            "fish-speech/fish_speech/models/text2semantic/inference.py",
             "--text", text
         ], check=True)
 
-        # Step 2: Convert to waveform
+        # Step 2: DAC
         subprocess.run([
             "python",
-            "fish_speech/models/dac/inference.py",
+            "fish-speech/fish_speech/models/dac/inference.py",
             "-i", "codes_0.npy"
         ], check=True)
-
+        
         # Step 3: Move output
         if os.path.exists("fake.wav"):
             os.rename("fake.wav", output_path)
