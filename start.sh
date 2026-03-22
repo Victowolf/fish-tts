@@ -4,10 +4,16 @@ set -e
 
 echo "🚀 Starting Fish Speech Server..."
 
-# System deps (VERY IMPORTANT from docs)
+# System deps
 apt update && apt install -y \
     python3-venv python3-pip git \
     portaudio19-dev libsox-dev ffmpeg
+
+# 🔥 Create ONE environment FIRST
+python3 -m venv venv
+source venv/bin/activate
+
+pip install --upgrade pip
 
 # Clone Fish repo
 rm -rf fish-speech || true
@@ -15,17 +21,13 @@ git clone https://github.com/fishaudio/fish-speech.git
 
 cd fish-speech
 
-# Install Fish (GPU version)
+# 🔥 Install Fish INSIDE venv (this installs torch, numpy, etc.)
 pip install -e .[cu126]
 
 cd ..
 
-# Create venv for API
-python3 -m venv venv
-source venv/bin/activate
-
-pip install --upgrade pip
-pip install -r requirements.txt
+# Install your API deps (same env)
+pip install fastapi uvicorn pydantic
 
 echo "📥 Downloading model weights..."
 
