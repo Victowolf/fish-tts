@@ -28,24 +28,51 @@ async def generate_audio(text, output_path):
     async with gpu_lock:
         print(f"🎤 Generating: {text[:50]}")
 
-        # Step 1: semantic
-        subprocess.run([
+        # Unique IDs to avoid overwrite
+        file_id = str(uuid.uuid4())
+        codes_file = f"codes_{file_id}.npy"
+        temp_wav = f"fake_{file_id}.wav"
+
+        # Step 1: text → semantic tokens
+        res1 = subprocess.run([
             sys.executable,
             "fish-speech/fish_speech/models/text2semantic/inference.py",
-            "--text", text
-        ], check=True)
+            "--text", text,
+            "--checkpoint-path", CHECKPOINT_DIR,
+            "--half"
+        ], capture_output=True, text=True)
 
-        subprocess.run([
+        print("🔍 text2semantic stdout:", res1.stdout)
+        print("❌ text2semantic stderr:", res1.stderr)
+
+        if res1.returncode != 0:
+            raise Exception("text2semantic failed")
+
+        # Fish always outputs codes_0.npy → rename it
+        if not os.path.exists("codes_0.npy"):
+            raise Exception("codes_0.npy not found")
+
+        os.rename("codes_0.npy", codes_file)
+
+        # Step 2: semantic → waveform
+        res2 = subprocess.run([
             sys.executable,
             "fish-speech/fish_speech/models/dac/inference.py",
-            "-i", "codes_0.npy"
-        ], check=True)
-        
-        # Step 3: Move output
-        if os.path.exists("fake.wav"):
-            os.rename("fake.wav", output_path)
-        else:
-            raise Exception("Audio generation failed")
+            "-i", codes_file,
+            "--checkpoint-path", f"{CHECKPOINT_DIR}/codec.pth"
+        ], capture_output=True, text=True)
+
+        print("🔍 DAC stdout:", res2.stdout)
+        print("❌ DAC stderr:", res2.stderr)
+
+        if res2.returncode != 0:
+            raise Exception("DAC step failed")
+
+        # Fish outputs fake.wav → rename it
+        if not os.path.exists("fake.wav"):
+            raise Exception("fake.wav not generated")
+
+        os.rename("fake.wav", output_path)
 
 
 @app.post("/tts")
