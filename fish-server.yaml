@@ -25,7 +25,7 @@ spec:
               cd /workspace || mkdir -p /workspace && cd /workspace
 
               rm -rf repo || true
-              git clone https://github.com/YOUR_USERNAME/YOUR_REPO.git repo
+              git clone https://github.com/Victowolf/fish-tts repo
 
               cd repo
 
