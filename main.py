@@ -29,22 +29,15 @@ async def generate_audio(text, output_path):
 
         response = requests.post(
             FISH_API_URL,
-            json={
-                "text": text
-            }
+            json={"text": text}
         )
 
         if response.status_code != 200:
             raise Exception(f"Fish API failed: {response.text}")
 
-        data = response.json()
-
-        # 🔥 decode base64 audio
-        audio_bytes = base64.b64decode(data["audio"])
-
+        # ✅ DIRECT AUDIO BYTES (NO JSON)
         with open(output_path, "wb") as f:
-            f.write(audio_bytes)
-
+            f.write(response.content)
 
 @app.post("/tts")
 async def tts(req: TTSRequest):
