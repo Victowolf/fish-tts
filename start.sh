@@ -32,14 +32,24 @@ pip install fastapi uvicorn pydantic requests
 echo "📥 Downloading model weights..."
 hf download fishaudio/s2-pro --local-dir checkpoints/s2-pro
 
-# 🔥 START FISH API SERVER (BACKGROUND)
 echo "🔥 Starting Fish API server..."
+
 python fish-speech/tools/api_server.py \
     --listen 0.0.0.0:8888 \
     --compile &
 
-# Wait for server to be ready
-sleep 10
+# 🔥 WAIT UNTIL API IS READY
+echo "⏳ Waiting for Fish API..."
+
+for i in {1..60}; do
+  if curl -s http://localhost:8888/docs > /dev/null; then
+    echo "✅ Fish API is ready!"
+    break
+  fi
+  echo "Waiting... ($i)"
+  sleep 2
+done
 
 echo "🔥 Starting FastAPI..."
+
 uvicorn main:app --host 0.0.0.0 --port 8000
