@@ -6,7 +6,7 @@ echo "🚀 Starting Fish Speech Server..."
 
 # System deps
 apt update && apt install -y \
-    python3-venv python3-pip git \
+    python3-venv python3-pip git curl \
     portaudio19-dev libsox-dev ffmpeg
 
 # Create environment
@@ -24,13 +24,19 @@ cd fish-speech
 # Install Fish (GPU)
 pip install -e .[cu126]
 
+# Fix known breakages
+pip uninstall -y torchvision
+
 cd ..
 
-# Install API deps
+# Install API + missing deps
 pip install fastapi uvicorn pydantic requests
+pip install numpy huggingface_hub
 
 echo "📥 Downloading model weights..."
-hf download fishaudio/s2-pro --local-dir checkpoints/s2-pro
+
+python -m huggingface_hub download fishaudio/s2-pro \
+    --local-dir checkpoints/s2-pro
 
 echo "🔥 Starting Fish API server..."
 
@@ -38,7 +44,7 @@ python fish-speech/tools/api_server.py \
     --listen 0.0.0.0:8888 \
     --compile &
 
-# 🔥 WAIT UNTIL API IS READY
+# Wait until ready
 echo "⏳ Waiting for Fish API..."
 
 for i in {1..60}; do
