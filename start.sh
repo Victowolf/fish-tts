@@ -26,6 +26,8 @@ pip install -e .[cu126]
 
 # Fix known breakages
 pip uninstall -y torchvision
+pip install torchaudio
+
 
 cd ..
 
@@ -35,8 +37,7 @@ pip install numpy huggingface_hub
 
 echo "📥 Downloading model weights..."
 
-python -m huggingface_hub download fishaudio/s2-pro \
-    --local-dir checkpoints/s2-pro
+hf download fishaudio/s2-pro --local-dir checkpoints/s2-pro
 
 echo "🔥 Starting Fish API server..."
 
