@@ -19,7 +19,7 @@ pip install --upgrade pip
 rm -rf fish-speech || true
 git clone https://github.com/fishaudio/fish-speech.git
 cd fish-speech
-git checkout 0a35e1c77b86aeb648e28df06f42603318cda300
+git checkout e85f49730b8cef232388d68ee9eddd2f4dcbe5d6
 
 # Install Fish (GPU)
 pip install -e .[cu126]
